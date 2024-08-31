@@ -26,6 +26,7 @@ services:
     chrome:
         image: robcherry/docker-chromedriver
         container_name: ${COMPOSE_PROJECT_NAME}-chrome
+        privileged: true
         ports:
             - "4444"
         environment:
