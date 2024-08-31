@@ -1,0 +1,3 @@
+/nginx/sites/*.conf
+/log/
+.env
