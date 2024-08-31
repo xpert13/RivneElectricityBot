@@ -51,11 +51,7 @@ readonly class ParsingHandler
     private function saveSchedule(string $date, array $schedule): bool
     {
         $encodedSchedule = json_encode($schedule);
-        $storedSchedule  = null;
-
-        if ($this->redis->exists($date)) {
-            $storedSchedule = $this->redis->get($date);
-        }
+        $storedSchedule  = $this->redis->get($date);
 
         if($encodedSchedule !== $storedSchedule) {
             $this->redis->set($date, $encodedSchedule);
@@ -75,7 +71,9 @@ readonly class ParsingHandler
             $text .= sprintf("*Черга %s*:%s\n\n", $group, rtrim("\n$item"));
         }
 
-        $message = new ChatMessage($text);
+        dump($text);
+
+        $message = new ChatMessage(trim($text));
 
         // Optional: Customize message with Telegram options
         $telegramOptions = (new TelegramOptions())
@@ -85,6 +83,8 @@ readonly class ParsingHandler
         $message->options($telegramOptions);
 
         // Send the message
-        $this->chatter->send($message);
+        $result = $this->chatter->send($message);
+
+        dump($result);
     }
 }
