@@ -72,7 +72,7 @@ readonly class ParsingHandler
 
         foreach ($schedule as $index => $item) {
             $group = $index + 1;
-            $text .= "*Группа $group*:" . rtrim("\n$item") . "\n\n";
+            $text .= sprintf("*Черга %s*:%s\n\n", $group, rtrim("\n$item"));
         }
 
         $message = new ChatMessage($text);
