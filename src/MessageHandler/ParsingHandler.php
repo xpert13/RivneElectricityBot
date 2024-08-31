@@ -71,8 +71,6 @@ readonly class ParsingHandler
             $text .= sprintf("*Черга %s*:%s\n\n", $group, rtrim("\n$item"));
         }
 
-        dump($text);
-
         $message = new ChatMessage(trim($text));
 
         // Optional: Customize message with Telegram options
@@ -84,7 +82,5 @@ readonly class ParsingHandler
 
         // Send the message
         $result = $this->chatter->send($message);
-
-        dump($result);
     }
 }
