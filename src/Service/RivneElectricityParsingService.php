@@ -11,7 +11,7 @@ use Symfony\Component\Panther\DomCrawler\Crawler;
 class RivneElectricityParsingService
 {
     private const URL = 'https://www.roe.vsei.ua/disconnections';
-    private const NO_VALUE = '-';
+    private const NO_VALUE = '';
 
     public function __construct(
         ParameterBagInterface $params,
