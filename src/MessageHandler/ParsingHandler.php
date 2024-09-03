@@ -81,6 +81,6 @@ readonly class ParsingHandler
         $message->options($telegramOptions);
 
         // Send the message
-        $result = $this->chatter->send($message);
+        $this->chatter->send($message);
     }
 }
