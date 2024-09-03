@@ -22,7 +22,8 @@
         "symfony/runtime": "7.1.*",
         "symfony/scheduler": "7.1.*",
         "symfony/telegram-notifier": "7.1.*",
-        "symfony/yaml": "7.1.*"
+        "symfony/yaml": "7.1.*",
+        "ext-intl": "*"
     },
     "config": {
         "allow-plugins": {

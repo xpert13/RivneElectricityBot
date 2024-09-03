@@ -7,6 +7,8 @@ namespace App\MessageHandler;
 use App\Collection\ScheduleQueueCollection;
 use App\Message\ParsingMessage;
 use App\Service\RivneElectricityParsingService;
+use DateTime;
+use IntlDateFormatter;
 use Predis\Client;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
@@ -18,6 +20,10 @@ use Symfony\Component\Notifier\Message\ChatMessage;
 #[AsMessageHandler]
 readonly class ParsingHandler
 {
+    private const DATE_FORMAT = 'd.m.Y';
+    private const LOCALE      = 'uk_UA';
+    private const TIMEZONE    = 'Europe/Kiev';
+
     public function __construct(
         private MessageBusInterface $messageBus,
         private RivneElectricityParsingService $parsingService,
@@ -68,7 +74,8 @@ readonly class ParsingHandler
 
     private function sendMessage(string $date, ScheduleQueueCollection $schedule): void
     {
-        $text = "**$date**\n\n";
+        $dayOfWeek = $this->getDayOfWeek($date);
+        $text      = "$dayOfWeek **$date**\n\n";
 
         foreach ($schedule as $queue) {
             $text .= sprintf("%s:%s\n\n", $queue->getTitleMarkdown(), rtrim("\n$queue->value"));
@@ -85,5 +92,13 @@ readonly class ParsingHandler
 
         // Send the message
         $this->chatter->send($message);
+    }
+
+    private function getDayOfWeek(string $dateString): string
+    {
+        $date      = DateTime::createFromFormat(self::DATE_FORMAT, $dateString);
+        $formatter = new IntlDateFormatter(self::LOCALE, IntlDateFormatter::FULL, IntlDateFormatter::NONE, self::TIMEZONE, null, 'EEEE');
+
+        return mb_convert_case($formatter->format($date), MB_CASE_TITLE, "UTF-8");
     }
 }

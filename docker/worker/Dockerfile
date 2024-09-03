@@ -33,6 +33,10 @@ RUN pecl install redis && docker-php-ext-enable redis
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd
 
+# Install intl extension
+RUN docker-php-ext-configure intl \
+    && docker-php-ext-install intl
+
 # Install Composer
 COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer
 
