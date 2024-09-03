@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\MessageHandler;
 
+use App\Collection\ScheduleQueueCollection;
 use App\Message\ParsingMessage;
 use App\Service\RivneElectricityParsingService;
 use Predis\Client;
@@ -35,9 +36,7 @@ readonly class ParsingHandler
             $schedules = $this->parsingService->parse();
 
             foreach ($schedules as $date => $schedule) {
-                if($this->saveSchedule($date, $schedule)) {
-                    $this->sendMessage($date, $schedule);
-                }
+                $this->processSchedule($date, ScheduleQueueCollection::create($schedule));
             }
         } catch (\Throwable $exception) {
             if ($message->isLastAttempt()) {
@@ -48,27 +47,31 @@ readonly class ParsingHandler
         }
     }
 
-    private function saveSchedule(string $date, array $schedule): bool
+    private function processSchedule(string $date, ScheduleQueueCollection $newSchedule): void
     {
-        $encodedSchedule = json_encode($schedule);
-        $storedSchedule  = $this->redis->get($date);
+        // Load previous schedule
+        $storedSchedule = ScheduleQueueCollection::create(
+            json_decode($this->redis->get($date) ?? '[]')
+        );
 
-        if($encodedSchedule !== $storedSchedule) {
-            $this->redis->set($date, $encodedSchedule);
+        // Mark changed queues
+        $newSchedule->markChangedQueues($storedSchedule);
 
-            return true;
+        if ($newSchedule->hasChangedValues()) {
+            // Save new value
+            $this->redis->set($date, json_encode($newSchedule->getValues()));
+
+            // Send message
+            $this->sendMessage($date, $newSchedule);
         }
-
-        return false;
     }
 
-    private function sendMessage(string $date, array $schedule): void
+    private function sendMessage(string $date, ScheduleQueueCollection $schedule): void
     {
-        $text = "*$date*\n\n";
+        $text = "**$date**\n\n";
 
-        foreach ($schedule as $index => $item) {
-            $group = $index + 1;
-            $text .= sprintf("*Черга %s*:%s\n\n", $group, rtrim("\n$item"));
+        foreach ($schedule as $queue) {
+            $text .= sprintf("%s:%s\n\n", $queue->getTitleMarkdown(), rtrim("\n$queue->value"));
         }
 
         $message = new ChatMessage(trim($text));
