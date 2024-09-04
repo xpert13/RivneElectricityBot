@@ -63,7 +63,7 @@ readonly class ParsingHandler
         // Mark changed queues
         $newSchedule->markChangedQueues($storedSchedule);
 
-        if ($newSchedule->hasChangedValues()) {
+        if ($storedSchedule->isEmpty() || $newSchedule->hasChangedValues()) {
             // Save new value
             $this->redis->set($date, json_encode($newSchedule->getValues()));
 
