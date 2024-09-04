@@ -20,9 +20,9 @@ class QueueScheduleDto
     public function getTitleMarkdown(): string
     {
         if (true === $this->changed) {
-            return sprintf('**%s %d** __(%s)__', self::QUEUE_PREFIX, $this->number, self::CHANGED_MARK);
+            return sprintf('*%s %d* _(%s)_', self::QUEUE_PREFIX, $this->number, self::CHANGED_MARK);
         } else {
-            return sprintf('**%s %d**', self::QUEUE_PREFIX, $this->number);
+            return sprintf('*%s %d*', self::QUEUE_PREFIX, $this->number);
         }
     }
 }

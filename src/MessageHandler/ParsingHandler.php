@@ -75,7 +75,7 @@ readonly class ParsingHandler
     private function sendMessage(string $date, ScheduleQueueCollection $schedule): void
     {
         $dayOfWeek = $this->getDayOfWeek($date);
-        $text      = "$dayOfWeek **$date**\n\n";
+        $text      = "$dayOfWeek *$date*\n\n";
 
         foreach ($schedule as $queue) {
             $text .= sprintf("%s:%s\n\n", $queue->getTitleMarkdown(), rtrim("\n$queue->value"));
