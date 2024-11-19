@@ -68,7 +68,7 @@ class RivneElectricityParsingService
             });
         });
 
-        return $this->removeEmpty($result);
+        return $result;
     }
 
     private function removeEmpty(array $schedules): array

@@ -60,6 +60,11 @@ readonly class ParsingHandler
             json_decode($this->redis->get($date) ?? '[]')
         );
 
+        if ($storedSchedule->isEmpty() && !$newSchedule->hasChangedValues()) {
+            // Skip empty schedule if it was empty
+            return;
+        }
+
         // Mark changed queues
         $newSchedule->markChangedQueues($storedSchedule);
 
