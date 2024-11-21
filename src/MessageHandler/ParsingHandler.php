@@ -23,7 +23,7 @@ readonly class ParsingHandler
     private const DATE_FORMAT  = 'd.m.Y';
     private const LOCALE       = 'uk_UA';
     private const TIMEZONE     = 'Europe/Kiev';
-    private const NO_BLACKOUTS = '_Відключень не буде_';
+    private const NO_BLACKOUTS = '_Відключення не заплановані_';
 
     public function __construct(
         private MessageBusInterface $messageBus,
