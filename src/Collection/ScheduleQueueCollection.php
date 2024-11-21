@@ -94,6 +94,11 @@ class ScheduleQueueCollection implements Iterator
         return $collection;
     }
 
+    public function isNew(): bool
+    {
+        return empty($this->items);
+    }
+
     public function isEmpty(): bool
     {
         foreach ($this->items as $item) {
