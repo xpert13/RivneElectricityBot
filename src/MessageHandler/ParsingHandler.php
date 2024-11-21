@@ -20,9 +20,10 @@ use Symfony\Component\Notifier\Message\ChatMessage;
 #[AsMessageHandler]
 readonly class ParsingHandler
 {
-    private const DATE_FORMAT = 'd.m.Y';
-    private const LOCALE      = 'uk_UA';
-    private const TIMEZONE    = 'Europe/Kiev';
+    private const DATE_FORMAT  = 'd.m.Y';
+    private const LOCALE       = 'uk_UA';
+    private const TIMEZONE     = 'Europe/Kiev';
+    private const NO_BLACKOUTS = '_Відключень не буде_';
 
     public function __construct(
         private MessageBusInterface $messageBus,
@@ -60,7 +61,7 @@ readonly class ParsingHandler
             json_decode($this->redis->get($date) ?? '[]')
         );
 
-        if ($storedSchedule->isEmpty() && !$newSchedule->hasChangedValues()) {
+        if ($storedSchedule->isEmpty() && $newSchedule->isEmpty()) {
             // Skip empty schedule if it was empty
             return;
         }
@@ -82,8 +83,12 @@ readonly class ParsingHandler
         $dayOfWeek = $this->getDayOfWeek($date);
         $text      = "$dayOfWeek *$date*\n\n";
 
-        foreach ($schedule as $queue) {
-            $text .= sprintf("%s:%s\n\n", $queue->getTitleMarkdown(), rtrim("\n$queue->value"));
+        if ($schedule->isEmpty()) {
+            $text .= self::NO_BLACKOUTS;
+        } else {
+            foreach ($schedule as $queue) {
+                $text .= sprintf("%s:%s\n\n", $queue->getTitleMarkdown(), rtrim("\n$queue->value"));
+            }
         }
 
         $message = new ChatMessage(trim($text));
