@@ -96,6 +96,12 @@ class ScheduleQueueCollection implements Iterator
 
     public function isEmpty(): bool
     {
-        return empty($this->items);
+        foreach ($this->items as $item) {
+            if (!empty($item->value)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
