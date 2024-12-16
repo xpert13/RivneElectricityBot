@@ -10,7 +10,7 @@ class QueueScheduleDto
     private const CHANGED_MARK = 'оновлено';
 
     public function __construct(
-        public readonly int $number,
+        public readonly string $queueNumber,
         public readonly string $value,
         public bool $changed = false,
     )
@@ -20,9 +20,9 @@ class QueueScheduleDto
     public function getTitleMarkdown(): string
     {
         if (true === $this->changed) {
-            return sprintf('*%s %d* _(%s)_', self::QUEUE_PREFIX, $this->number, self::CHANGED_MARK);
+            return sprintf('*%s %s* _(%s)_', self::QUEUE_PREFIX, $this->queueNumber, self::CHANGED_MARK);
         } else {
-            return sprintf('*%s %d*', self::QUEUE_PREFIX, $this->number);
+            return sprintf('*%s %s*', self::QUEUE_PREFIX, $this->queueNumber);
         }
     }
 }

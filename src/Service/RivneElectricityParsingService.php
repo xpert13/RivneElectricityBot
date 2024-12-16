@@ -12,6 +12,7 @@ class RivneElectricityParsingService
 {
     private const URL = 'https://www.roe.vsei.ua/disconnections';
     private const NO_VALUE = '';
+    private const TITLE_SUB_SCHEDULE = 'Підчерга';
 
     public function __construct(
         ParameterBagInterface $params,
@@ -36,36 +37,65 @@ class RivneElectricityParsingService
             throw new \Exception('Table with schedule wasn\'t found.');
         }
 
-        $rows->each(function (Crawler $node) use (&$result): void {
+        $queueTitles = null;
+
+        $rows->each(function (Crawler $node) use (&$result, &$queueTitles): void {
             $columns = $node->filter('td');
 
-            if ($columns->count() !== 7) {
+            if ($columns->count() === 0) {
                 return;
             }
 
-            $date = $columns->first()->text();
+            $rowTitle = $columns->first()->text();
 
-            if (empty($date)) {
-                return;
-            }
+            if (!empty($queueTitles)) {
+                $schedule = $this->parseQueueHours($queueTitles, $node);
 
-            $schedule = $node->filter('td:not(:first-child)');
-
-            if ($schedule->count() === 0) {
-                return;
-            }
-
-            $schedule->each(function (Crawler $node) use (&$result, $date): void {
-                $text = trim($node->text());
-
-                if(preg_match('/\d{2}:\d{2}/', $text) > 0 || empty($text)) {
-                    $value = $text;
-                } else {
-                    $value = self::NO_VALUE;
+                if (!empty($schedule)) {
+                    $result[$rowTitle] = $schedule;
                 }
+            } elseif ($rowTitle === self::TITLE_SUB_SCHEDULE) {
+                $queueTitles = $this->parseQueueTitle($node);
+            }
+        });
 
-                $result[$date][] = $value;
-            });
+        return $result;
+    }
+
+    private function parseQueueTitle(Crawler $row): array
+    {
+        $result = [];
+        $titles = $row->filter('td:not(:first-child)');
+
+        $titles->each(function (Crawler $node) use (&$result): void {
+            $result[] = trim($node->text());
+        });
+
+        return $result;
+    }
+
+    private function parseQueueHours(array $queueTitles, Crawler $row): array
+    {
+        $schedule = $row->filter('td:not(:first-child)');
+
+        if ($schedule->count() === 0) {
+            return [];
+        }
+
+        $i      = -1;
+        $result = [];
+
+        $schedule->each(function (Crawler $node) use (&$result, &$i, $queueTitles): void {
+            $schedule = $queueTitles[++$i];
+            $text = trim($node->text());
+
+            if(preg_match('/\d{2}:\d{2}/', $text) > 0 || empty($text)) {
+                $value = $text;
+            } else {
+                $value = self::NO_VALUE;
+            }
+
+            $result[$schedule] = $value;
         });
 
         return $result;

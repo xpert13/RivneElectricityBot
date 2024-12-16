@@ -47,7 +47,7 @@ class ScheduleQueueCollection implements Iterator
     {
         foreach ($this as $internalQueueScheduleDto) {
             foreach ($queueCollection as $externalQueueScheduleDto) {
-                if ($internalQueueScheduleDto->number === $externalQueueScheduleDto->number) {
+                if ($internalQueueScheduleDto->queueNumber === $externalQueueScheduleDto->queueNumber) {
                     $internalQueueScheduleDto->changed = $internalQueueScheduleDto->value !== $externalQueueScheduleDto->value;
 
                     break;
@@ -72,7 +72,7 @@ class ScheduleQueueCollection implements Iterator
         $result = [];
 
         foreach ($this as $queueScheduleDto) {
-            $result[] = $queueScheduleDto->value;
+            $result[$queueScheduleDto->queueNumber] = $queueScheduleDto->value;
         }
 
         return $result;
@@ -83,9 +83,9 @@ class ScheduleQueueCollection implements Iterator
         $collection = new self();
 
         if (false === empty($data)) {
-            foreach ($data as $index => $value) {
+            foreach ($data as $queueNumber => $value) {
                 $collection->push(new QueueScheduleDto(
-                    number: $index + 1,
+                    queueNumber: $queueNumber,
                     value: $value,
                 ));
             }
