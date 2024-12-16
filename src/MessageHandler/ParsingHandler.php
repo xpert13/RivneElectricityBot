@@ -58,7 +58,7 @@ readonly class ParsingHandler
     {
         // Load previous schedule
         $storedSchedule = ScheduleQueueCollection::create(
-            json_decode($this->redis->get($date) ?? '[]')
+            json_decode($this->redis->get($date) ?? '[]', true)
         );
 
         if ($storedSchedule->isEmpty() && $newSchedule->isEmpty()) {
