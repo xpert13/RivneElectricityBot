@@ -46,6 +46,8 @@ readonly class ParsingHandler
                 $this->processSchedule($date, ScheduleQueueCollection::create($schedule));
             }
         } catch (\Throwable $exception) {
+            dump($exception->getMessage());
+
             if ($message->isLastAttempt()) {
                 throw $exception;
             }
