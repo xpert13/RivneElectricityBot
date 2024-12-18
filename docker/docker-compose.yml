@@ -29,6 +29,8 @@ services:
         privileged: true
         ports:
             - "4444"
+        volumes:
+            - ../:/var/www
         environment:
             CHROMEDRIVER_WHITELISTED_IPS: ""
         networks:

@@ -44,3 +44,8 @@ services:
     Predis\Client:
         arguments:
             $parameters: "%env(REDIS_URL)%"
+
+    App\MessageHandler\GenerateAndSendTelegramHandler:
+        arguments:
+            $twig: '@twig'
+            $projectDir: '%kernel.project_dir%'

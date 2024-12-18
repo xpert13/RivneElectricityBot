@@ -7,6 +7,7 @@
         "php": ">=8.2",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "ext-intl": "*",
         "ext-redis": "^6.0",
         "dragonmantank/cron-expression": "^3.3",
         "friendsofphp/proxy-manager-lts": "^1.0",
@@ -22,8 +23,10 @@
         "symfony/runtime": "7.1.*",
         "symfony/scheduler": "7.1.*",
         "symfony/telegram-notifier": "7.1.*",
+        "symfony/twig-bundle": "7.1.*",
         "symfony/yaml": "7.1.*",
-        "ext-intl": "*"
+        "twig/extra-bundle": "^2.12|^3.0",
+        "twig/twig": "^2.12|^3.0"
     },
     "config": {
         "allow-plugins": {
