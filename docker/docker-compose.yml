@@ -24,15 +24,20 @@ services:
             - app-network
 
     chrome:
-        image: robcherry/docker-chromedriver
+        image: selenium/standalone-chromium:latest
         container_name: ${COMPOSE_PROJECT_NAME}-chrome
         privileged: true
+        shm_size: 2g
         ports:
             - "4444"
         volumes:
             - ../:/var/www
         environment:
-            CHROMEDRIVER_WHITELISTED_IPS: ""
+            - SE_NODE_MAX_SESSIONS=1
+            - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+            - SE_NODE_SESSION_TIMEOUT=300
+            - SE_NODE_GRID_URL=http://localhost:4444
+            - SE_NODE_DETECT_DRIVERS=false
         networks:
             - app-network
 
