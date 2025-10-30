@@ -21,7 +21,7 @@ use Twig\Environment;
 #[AsMessageHandler]
 readonly class GenerateAndSendTelegramHandler
 {
-    private const HEADER_HEIGHT = 114;
+    private const HEADER_HEIGHT = 144;
     private const DATE_FORMAT   = 'd.m.Y';
     private const LOCALE        = 'uk_UA';
     private const TIMEZONE      = 'Europe/Kiev';
