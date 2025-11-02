@@ -3,4 +3,13 @@ monolog:
     main:
       type: stream
       path: "%kernel.logs_dir%/%kernel.environment%.log"
-      level: debug
+      level: info
+      channels:
+        - '!deprecation'
+        - '!php'
+    php:
+      type: stream
+      path: "%kernel.logs_dir%/php.log"
+      level: info
+      channels:
+        - 'php'
