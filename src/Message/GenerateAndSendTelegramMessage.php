@@ -18,4 +18,12 @@ class GenerateAndSendTelegramMessage extends AbstractMessage
     {
         parent::__construct($attempt);
     }
+
+    public function toArray(): array
+    {
+        return [
+            'date'      => $this->date,
+            'schedules' => $this->schedules->getValues(),
+        ];
+    }
 }

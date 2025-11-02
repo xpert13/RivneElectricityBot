@@ -9,6 +9,7 @@ use App\Message\GenerateAndSendTelegramMessage;
 use DateTime;
 use Facebook\WebDriver\WebDriverDimension;
 use IntlDateFormatter;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
@@ -35,6 +36,7 @@ readonly class GenerateAndSendTelegramHandler
     public function __construct(
         private Environment $twig,
         private ChatterInterface $chatter,
+        private LoggerInterface $logger,
         ParameterBagInterface $params,
         private string $projectDir,
     ) {
@@ -49,8 +51,11 @@ readonly class GenerateAndSendTelegramHandler
      */
     public function __invoke(GenerateAndSendTelegramMessage $message): void
     {
+        $this->logger->info('Start sending telegram message.', $message->toArray());
+
         try {
             if ($message->schedules->isEmpty()) {
+                $this->logger->info('The schedule is empty. Send "no blackouts" message.');
                 $this->sendNoBlackoutsMessage($message->date);
 
                 return;
@@ -64,10 +69,12 @@ readonly class GenerateAndSendTelegramHandler
             $this->clearCache($this->templatesDir);
             $this->clearCache($this->screenshotDir);
         } catch (\Throwable $exception) {
-            dump($exception->getMessage());
+            $this->logger->error('Exception: ' . $exception->getMessage(), $exception->getTrace());
 
             throw $exception;
         }
+
+        $this->logger->info('Finish sending telegram message.');
     }
 
     private function generateHtmlFile(string $date, ScheduleQueueCollection $schedules): string
@@ -85,6 +92,7 @@ readonly class GenerateAndSendTelegramHandler
 
         file_put_contents($filepath, $html);
 
+        $this->logger->info('HTML file generated.', [$filepath]);
         return $filepath;
     }
 
@@ -104,6 +112,7 @@ readonly class GenerateAndSendTelegramHandler
 
         $this->chrome->takeScreenshot($filepath);
 
+        $this->logger->info('Screenshot file generated.', [$filepath]);
         return $filepath;
     }
 
@@ -125,6 +134,7 @@ readonly class GenerateAndSendTelegramHandler
 
     private function sendMessage(string $date, string $screenshot): void
     {
+        $this->logger->info('Start sending telegram message.');
         $message = new ChatMessage($date);
 
         $telegramOptions = (new TelegramOptions())
@@ -135,6 +145,7 @@ readonly class GenerateAndSendTelegramHandler
         $message->options($telegramOptions);
 
         $this->chatter->send($message);
+        $this->logger->info('Telegram message sent.');
     }
 
     private function getDayOfWeek(string $dateString): string

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Panther\Client;
 use Symfony\Component\Panther\DomCrawler\Crawler;
@@ -14,8 +15,11 @@ class RivneElectricityParsingService
     private const NO_VALUE = '';
     private const TITLE_SUB_SCHEDULE = 'Підчерга';
 
+    private Client $chrome;
+
     public function __construct(
         ParameterBagInterface $params,
+        private readonly LoggerInterface $logger,
     )
     {
         $this->chrome = Client::createSeleniumClient(
@@ -58,6 +62,8 @@ class RivneElectricityParsingService
                 $queueTitles = $this->parseQueueTitle($node);
             }
         });
+
+        $this->logger->info('Data parsed:', $result);
 
         return $result;
     }

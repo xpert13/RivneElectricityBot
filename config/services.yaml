@@ -49,3 +49,8 @@ services:
         arguments:
             $twig: '@twig'
             $projectDir: '%kernel.project_dir%'
+            $logger: '@logger'
+
+    App\MessageHandler\ParsingHandler:
+        arguments:
+            $logger: '@logger'
