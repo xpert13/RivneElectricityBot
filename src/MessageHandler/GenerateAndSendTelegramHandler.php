@@ -29,7 +29,7 @@ readonly class GenerateAndSendTelegramHandler
     private const NO_BLACKOUTS  = '_Відключення не заплановані_';
     private const MAX_CACHE_LIFETIME = 7 * 24 * 60 * 60; // 7 days
 
-    private Client $chrome;
+    private string $seleniumHost;
     private string $templatesDir;
     private string $screenshotDir;
 
@@ -40,7 +40,7 @@ readonly class GenerateAndSendTelegramHandler
         ParameterBagInterface $params,
         private string $projectDir,
     ) {
-        $this->chrome        = Client::createSeleniumClient(host: $params->get('app.chrome_driver'));
+        $this->seleniumHost  = $params->get('app.chrome_driver');
         $this->templatesDir  = sprintf('%s/var/html', $this->projectDir);
         $this->screenshotDir = sprintf('%s/var/screenshots', $this->projectDir);
     }
@@ -98,19 +98,25 @@ readonly class GenerateAndSendTelegramHandler
 
     private function makeScreenshot(string $date, string $htmlFilePath): string
     {
-        $this->chrome->request('GET', 'file://' . $htmlFilePath);
+        $chrome = Client::createSeleniumClient(host: $this->seleniumHost);
 
-        $pageHeight = $this->chrome->executeScript('return document.body.scrollHeight');
+        try {
+            $chrome->request('GET', 'file://' . $htmlFilePath);
 
-        $this->chrome->getWebDriver()->manage()->window()->setSize(new WebDriverDimension(500, $pageHeight + self::HEADER_HEIGHT));
+            $pageHeight = $chrome->executeScript('return document.body.scrollHeight');
 
-        $filepath = sprintf('%s/%s.png', $this->screenshotDir, $date);
+            $chrome->getWebDriver()->manage()->window()->setSize(new WebDriverDimension(500, $pageHeight + self::HEADER_HEIGHT));
 
-        if (!file_exists($this->screenshotDir)) {
-            mkdir($this->screenshotDir);
+            $filepath = sprintf('%s/%s.png', $this->screenshotDir, $date);
+
+            if (!file_exists($this->screenshotDir)) {
+                mkdir($this->screenshotDir);
+            }
+
+            $chrome->takeScreenshot($filepath);
+        } finally {
+            $chrome->close();
         }
-
-        $this->chrome->takeScreenshot($filepath);
 
         $this->logger->info('Screenshot file generated.', [$filepath]);
         return $filepath;

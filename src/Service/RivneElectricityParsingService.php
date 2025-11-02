@@ -15,53 +15,61 @@ class RivneElectricityParsingService
     private const NO_VALUE = '';
     private const TITLE_SUB_SCHEDULE = 'Підчерга';
 
-    private Client $chrome;
+    private readonly string $seleniumHost;
+    private readonly string $userAgent;
 
     public function __construct(
         ParameterBagInterface $params,
         private readonly LoggerInterface $logger,
-    )
-    {
-        $this->chrome = Client::createSeleniumClient(
-            host: $params->get('app.chrome_driver'),
-            options: [
-                sprintf('--user-agent=%s', $params->get('app.user_agent')),
-            ],
-        );
+    ) {
+        $this->seleniumHost = $params->get('app.chrome_driver');
+        $this->userAgent    = $params->get('app.user_agent');
     }
 
     public function parse(): array
     {
         $result  = [];
-        $crawler = $this->chrome->request('GET', self::URL);
 
-        $rows = $crawler->filter('#fetched-data-container tr');
+        $chrome = Client::createSeleniumClient(
+            host: $this->seleniumHost,
+            options: [
+                sprintf('--user-agent=%s', $this->userAgent),
+            ],
+        );
 
-        if ($rows->count() === 0) {
-            throw new \Exception('Table with schedule wasn\'t found.');
-        }
+        try {
+            $crawler = $chrome->request('GET', self::URL);
 
-        $queueTitles = null;
+            $rows = $crawler->filter('#fetched-data-container tr');
 
-        $rows->each(function (Crawler $node) use (&$result, &$queueTitles): void {
-            $columns = $node->filter('td');
-
-            if ($columns->count() === 0) {
-                return;
+            if ($rows->count() === 0) {
+                throw new \Exception('Table with schedule wasn\'t found.');
             }
 
-            $rowTitle = $columns->first()->text();
+            $queueTitles = null;
 
-            if (!empty($queueTitles)) {
-                $schedule = $this->parseQueueHours($queueTitles, $node);
+            $rows->each(function (Crawler $node) use (&$result, &$queueTitles): void {
+                $columns = $node->filter('td');
 
-                if (!empty($schedule)) {
-                    $result[$rowTitle] = $schedule;
+                if ($columns->count() === 0) {
+                    return;
                 }
-            } elseif ($rowTitle === self::TITLE_SUB_SCHEDULE) {
-                $queueTitles = $this->parseQueueTitle($node);
-            }
-        });
+
+                $rowTitle = $columns->first()->text();
+
+                if (!empty($queueTitles)) {
+                    $schedule = $this->parseQueueHours($queueTitles, $node);
+
+                    if (!empty($schedule)) {
+                        $result[$rowTitle] = $schedule;
+                    }
+                } elseif ($rowTitle === self::TITLE_SUB_SCHEDULE) {
+                    $queueTitles = $this->parseQueueTitle($node);
+                }
+            });
+        } finally {
+            $chrome->close();
+        }
 
         $this->logger->info('Data parsed:', $result);
 
