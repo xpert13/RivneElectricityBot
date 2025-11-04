@@ -1,0 +1,117 @@
+name: rivne-electricity
+services:
+    app:
+        cpu_shares: 90
+        command: []
+        container_name: electricity-bot-worker
+        depends_on:
+            chrome:
+                condition: service_started
+                required: true
+            redis:
+                condition: service_started
+                required: true
+        deploy:
+            resources:
+                limits:
+                    memory: 15964M
+        environment:
+            - ENV=production
+            - REDIS_PORT=6379
+            - TELEGRAM_DSN=
+            - USER_AGENT=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
+                (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+        hostname: electricity-bot-worker
+        image: xpert13/rivne-electricity-bot-worker:latest
+        labels:
+            icon: https://i.ibb.co/0jNcN4TD/roe-icon-192.png
+        restart: unless-stopped
+        volumes:
+            - type: bind
+              source: /DATA/AppData/electricity-bot/var/log
+              target: /var/www/var/log
+            - type: bind
+              source: /DATA/AppData/electricity-bot/var/html
+              target: /var/www/var/html
+            - type: bind
+              source: /DATA/AppData/electricity-bot/var/screenshots
+              target: /var/www/var/screenshots
+        ports: []
+        devices: []
+        cap_add: []
+        network_mode: bridge
+        privileged: false
+    chrome:
+        cpu_shares: 90
+        command: []
+        container_name: electricity-bot-chrome
+        deploy:
+            resources:
+                limits:
+                    memory: 15964M
+        environment:
+            - SE_NODE_DETECT_DRIVERS=false
+            - SE_NODE_GRID_URL=http://localhost:4444
+            - SE_NODE_MAX_SESSIONS=1
+            - SE_NODE_OVERRIDE_MAX_SESSIONS=true
+            - SE_NODE_SESSION_TIMEOUT=300
+        hostname: electricity-bot-chrome
+        image: selenium/standalone-chromium:latest
+        labels:
+            icon: https://i.ibb.co/0jNcN4TD/roe-icon-192.png
+        ports:
+            - target: 4444
+              published: "4444"
+              protocol: tcp
+        privileged: true
+        restart: unless-stopped
+        shm_size: "2147483648"
+        volumes:
+            - type: bind
+              source: /DATA/AppData/electricity-bot/var/log
+              target: /var/www/var/log
+            - type: bind
+              source: /DATA/AppData/electricity-bot/var/html
+              target: /var/www/var/html
+            - type: bind
+              source: /DATA/AppData/electricity-bot/var/screenshots
+              target: /var/www/var/screenshots
+        devices: []
+        cap_add: []
+        network_mode: bridge
+    redis:
+        cpu_shares: 90
+        command: []
+        container_name: electricity-bot-redis
+        deploy:
+            resources:
+                limits:
+                    memory: 15964M
+        hostname: electricity-bot-redis
+        image: redis:7.4.0-alpine
+        labels:
+            icon: https://i.ibb.co/0jNcN4TD/roe-icon-192.png
+        ports:
+            - target: 6379
+              published: "6379"
+              protocol: tcp
+        restart: unless-stopped
+        volumes: []
+        devices: []
+        cap_add: []
+        environment: []
+        network_mode: bridge
+        privileged: false
+x-casaos:
+    author: xpert13
+    category: self
+    hostname: www.roe.vsei.ua
+    icon: https://i.ibb.co/0jNcN4TD/roe-icon-192.png
+    index: /disconnections
+    is_uncontrolled: false
+    port_map: ""
+    scheme: https
+    store_app_id: ""
+    title:
+        custom: ""
+        en_us: Rivne electricity
